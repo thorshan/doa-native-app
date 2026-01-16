@@ -98,7 +98,17 @@ const RenderFurigana: React.FC<RenderFuriganaProps> = ({
         } else {
           reading = "ひと";
         }
-      } else {
+      } else if (kanjiMatch.character === "本")
+        if (isNumber(prevChar)) {
+          reading = ["1", "3", "4", "6", "8", "10"].includes(prevChar)
+            ? "ぽん"
+            : "ぼん";
+        } else if (isKanji(prevChar) || isKatakana(prevChar)) {
+          reading = "ほん";
+        } else {
+          reading = "ほん";
+        }
+      else {
         const isCompound =
           (prevChar && isKanji(prevChar)) || (nextChar && isKanji(nextChar));
 

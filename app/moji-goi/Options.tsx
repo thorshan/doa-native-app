@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -27,6 +27,11 @@ const SelectOption: React.FC = () => {
     router.push("/moji-goi/Goi");
   };
 
+  const handleParticles = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push("/moji-goi/Particles");
+  };
+
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
@@ -53,8 +58,9 @@ const SelectOption: React.FC = () => {
             : "Select the category you want to study."}
         </Text>
 
-        {/* Option Cards */}
+        {/* Option Cards Grid */}
         <View style={styles.cardContainer}>
+          {/* MOJI CARD */}
           <Pressable
             onPress={handleMoji}
             style={({ pressed }) => [
@@ -66,21 +72,15 @@ const SelectOption: React.FC = () => {
               },
             ]}
           >
-            <View
-              style={[
-                styles.iconBox,
-                { backgroundColor: colors.primary + "10" },
-              ]}
-            >
-              <Text style={[styles.kanjiIcon, { color: colors.primary }]}>
-                字
-              </Text>
+            <View style={[styles.iconBox, { backgroundColor: colors.primary + "10" }]}>
+              <Text style={[styles.kanjiIcon, { color: colors.primary }]}>字</Text>
             </View>
             <Text style={[styles.optionLabel, { color: colors.text }]}>
               {translations[language].moji}
             </Text>
           </Pressable>
 
+          {/* GOI CARD */}
           <Pressable
             onPress={handleGoi}
             style={({ pressed }) => [
@@ -92,25 +92,36 @@ const SelectOption: React.FC = () => {
               },
             ]}
           >
-            <View
-              style={[
-                styles.iconBox,
-                { backgroundColor: colors.primary + "10" },
-              ]}
-            >
-              <Ionicons
-                name="chatbox-ellipses-outline"
-                size={32}
-                color={colors.primary}
-              />
+            <View style={[styles.iconBox, { backgroundColor: colors.primary + "10" }]}>
+              <Ionicons name="chatbox-ellipses-outline" size={32} color={colors.primary} />
             </View>
             <Text style={[styles.optionLabel, { color: colors.text }]}>
               {translations[language].goi}
             </Text>
           </Pressable>
+
+          {/* PARTICLES CARD */}
+          <Pressable
+            onPress={handleParticles}
+            style={({ pressed }) => [
+              styles.optionCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.primary + "30",
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              },
+            ]}
+          >
+            <View style={[styles.iconBox, { backgroundColor: colors.primary + "10" }]}>
+              <MaterialCommunityIcons name="book-alphabet" size={32} color={colors.primary} />
+            </View>
+            <Text style={[styles.optionLabel, { color: colors.text }]}>
+              {language === "mm" ? "ဝိဘတ်များ" : "Particles"}
+            </Text>
+          </Pressable>
         </View>
 
-        {/* Simple Back Button at bottom as requested */}
+        {/* Back Button at bottom */}
         <Pressable
           onPress={handleBack}
           style={({ pressed }) => [
@@ -157,13 +168,14 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     flexDirection: "row",
+    flexWrap: "wrap", // Allows the third card to move to the next line
     gap: 16,
     width: "100%",
     justifyContent: "center",
     marginBottom: 40,
   },
   optionCard: {
-    width: (width - 64) / 2, // Dynamic width for two columns
+    width: (width - 64) / 2, // Keeps two columns
     height: 160,
     borderRadius: 24,
     borderWidth: 1.5,

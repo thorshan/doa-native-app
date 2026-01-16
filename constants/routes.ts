@@ -4,9 +4,9 @@ export const ROUTES = {
   SETTINGS: "/Settings" as const,
   OPTIONS: "/Options" as const,
   COUNTINGS: "/Countings" as const,
-
-  LOGIN: "/auth/Login" as const,
-  REGISTER: "/auth/Register" as const,
+  VIDEO_FEED: "/VideoFeed" as const,
+  ADMIN_INFO: "/AdminInfo" as const,
+  AUTH: "/auth/Auth" as const,
 
   PROFILE: "/user/Profile" as const,
   PROFILE_EDIT: "/user/EditProfile" as const,
@@ -28,6 +28,7 @@ export const ROUTES = {
   MOJI_GOI: "/moji-goi/Options" as const,
   MOJI: "/moji-goi/Moji" as const,
   GOI: "/moji-goi/Goi" as const,
+  PARTICLES: "/moji-goi/Particles" as const,
 
   READING: "/Reading" as const,
   LISTENING: "/Listening" as const,
