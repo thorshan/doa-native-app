@@ -16,7 +16,7 @@ import { ROUTES } from "@/constants/routes";
 import { useTheme } from "@/theme/ThemeProvider";
 
 const Options = () => {
-  const { colors, typography } = useTheme();
+  const { colors } = useTheme();
   const [userData, setUserData] = useState<any>(null);
   const [updating, setUpdating] = useState(false);
 
@@ -47,11 +47,15 @@ const Options = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View style={styles.content}>
         {/* Header Section */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>Choose Your Level</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            Choose Your Level
+          </Text>
           <Text style={[styles.subtitle, { color: colors.text + "60" }]}>
             Pick a starting point that fits your current Japanese knowledge.
           </Text>
@@ -79,10 +83,7 @@ const Options = () => {
         </View>
 
         {updating && (
-          <ActivityIndicator 
-            color={colors.primary} 
-            style={{ marginTop: 20 }} 
-          />
+          <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
         )}
       </View>
     </SafeAreaView>
@@ -90,7 +91,14 @@ const Options = () => {
 };
 
 /* ================= HELPER COMPONENT ================= */
-const OptionCard = ({ title, description, icon, onPress, colors, disabled }: any) => (
+const OptionCard = ({
+  title,
+  description,
+  icon,
+  onPress,
+  colors,
+  disabled,
+}: any) => (
   <Pressable
     onPress={onPress}
     disabled={disabled}
@@ -108,7 +116,9 @@ const OptionCard = ({ title, description, icon, onPress, colors, disabled }: any
     </View>
     <View style={styles.cardText}>
       <Text style={[styles.cardTitle, { color: colors.text }]}>{title}</Text>
-      <Text style={[styles.cardDesc, { color: colors.text + "50" }]}>{description}</Text>
+      <Text style={[styles.cardDesc, { color: colors.text + "50" }]}>
+        {description}
+      </Text>
     </View>
     <Ionicons name="chevron-forward" size={20} color={colors.text + "20"} />
   </Pressable>
@@ -118,8 +128,18 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, padding: 24, justifyContent: "center" },
   header: { marginBottom: 40, alignItems: "center" },
-  title: { fontSize: 28, fontWeight: "900", textAlign: "center", marginBottom: 12 },
-  subtitle: { fontSize: 16, textAlign: "center", lineHeight: 22, paddingHorizontal: 20 },
+  title: {
+    fontSize: 28,
+    fontWeight: "900",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 22,
+    paddingHorizontal: 20,
+  },
   optionsWrapper: { gap: 16 },
   card: {
     flexDirection: "row",

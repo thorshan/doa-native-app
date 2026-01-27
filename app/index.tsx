@@ -23,8 +23,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/theme/ThemeProvider";
 
 const { width } = Dimensions.get("window");
-const GAP = 16;
-const CARD_WIDTH = (width - 48) / 2;
+const PADDING = 16;
+// Full width of screen minus the padding on both sides
+const FULL_CARD_WIDTH = width - PADDING * 2;
 
 const ROLES = { ADMIN: "admin", USER: "user" };
 
@@ -32,7 +33,7 @@ const HomeCard = ({ item, isUnlocked, hasPassedData, onPress }: any) => {
   const scale = React.useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () =>
-    Animated.spring(scale, { toValue: 0.96, useNativeDriver: true }).start();
+    Animated.spring(scale, { toValue: 0.98, useNativeDriver: true }).start();
   const handlePressOut = () =>
     Animated.spring(scale, {
       toValue: 1,
@@ -41,16 +42,16 @@ const HomeCard = ({ item, isUnlocked, hasPassedData, onPress }: any) => {
     }).start();
 
   const getCardHeight = () => {
-    if (item.isCompact) return 60;
-    if (item.fullWidth) return 95;
-    return 120;
+    if (item.isCompact) return 70;
+    return 100; // Consistent height for full width
   };
 
   return (
     <Animated.View
       style={{
         transform: [{ scale }],
-        width: item.fullWidth ? "100%" : CARD_WIDTH,
+        width: "100%",
+        marginBottom: 16, 
       }}
     >
       <Pressable
@@ -73,42 +74,23 @@ const HomeCard = ({ item, isUnlocked, hasPassedData, onPress }: any) => {
           colors={item.gradient}
           style={styles.cardGradient}
           start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0.5 }}
+          end={{ x: 1, y: 0 }}
         >
-          <Text
-            style={[
-              styles.bgChar,
-              item.isCompact
-                ? { fontSize: 50, top: -5, right: 10 }
-                : item.fullWidth
-                ? { fontSize: 85, top: -10, right: 10 }
-                : null,
-            ]}
-          >
-            {item.char}
-          </Text>
+          <Text style={styles.bgChar}>{item.char}</Text>
 
           <View style={styles.cardContentRow}>
             <View style={styles.iconTitleGroup}>
-              {item.icon && (
-                <Ionicons
-                  name={item.icon as any}
-                  size={item.isCompact ? 22 : 28}
-                  color="white"
-                />
+              {item.icon ? (
+                <Ionicons name={item.icon as any} size={28} color="white" />
+              ) : (
+                 // Fallback icon if none provided to keep UI consistent
+                <Ionicons name="book" size={26} color="white" />
               )}
-              <Text
-                style={[
-                  styles.cardTitle,
-                  item.isCompact && { fontSize: 15, fontWeight: "700" },
-                ]}
-              >
-                {item.title}
-              </Text>
+              <Text style={styles.cardTitle}>{item.title}</Text>
             </View>
+            <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
           </View>
 
-          {/* Locked UI Overlay */}
           {!isUnlocked && (
             <View style={styles.lockOverlay}>
               <Ionicons
@@ -144,49 +126,50 @@ const Home = () => {
         title: translations[language].basic_japanese,
         char: "あ",
         path: ROUTES.BASIC_INFO,
-        gradient: ["#43e97b", "#38f9d7"],
+        gradient: ["#38f9d7", "#43e97b"],
+        icon: "book-outline",
       },
       {
-        title: translations[language].moji_goi,
+        title: translations[language].course || "Courses",
         char: "語",
-        path: ROUTES.MOJI_GOI,
-        gradient: ["#4facfe", "#00f2fe"],
-      },
-      {
-        title: translations[language].s_grammar,
-        char: "文",
-        path: ROUTES.GRAMMAR,
-        gradient: ["#fa709a", "#fee140"],
-      },
-      {
-        title: translations[language].s_reading,
-        char: "読",
-        path: "/Reading",
-        gradient: ["#667eea", "#764ba2"],
-      },
-      {
-        title: translations[language].s_listening,
-        char: "聴",
-        path: "/Listening",
-        gradient: ["#f093fb", "#f5576c"],
-      },
-      {
-        title: translations[language].s_speaking,
-        char: "話",
-        path: "/Speaking",
-        gradient: ["#0ba360", "#3cba92"],
-      },
-      {
-        title: translations[language].exams,
-        char: "試",
-        path: ROUTES.EXAMS,
-        gradient: ["#1e3c72", "#2a5298"],
+        path: ROUTES.COURSE_LIST,
+        gradient: ["#00f2fe","#4facfe" ],
+        icon: "library-outline",
       },
       {
         title: translations[language].countings || "Countings",
         char: "数",
         path: ROUTES.COUNTINGS,
         gradient: ["#FAD961", "#F76B1C"],
+        icon: "calculator-outline",
+      },
+      {
+        title: translations[language].doa_hub || "DOA Hub",
+        char: "ドア",
+        path: ROUTES.DOA_HUB,
+        gradient: ["#4962ff", "#1c39f7"],
+        icon: "layers-outline",
+      },
+      {
+        title: translations[language].video_feed || "Video Feed",
+        char: "映",
+        path: "/VideoFeed",
+        gradient: ["#FF512F", "#DD2476"],
+        icon: "play-circle-outline",
+      },
+      {
+        title: translations[language].exams,
+        char: "試",
+        path: ROUTES.EXAMS,
+        gradient: ["#1e3c72", "#2a5298"],
+        icon: "document-text-outline",
+      },
+      {
+        title: "Buy me a Matcha tea",
+        char: "茶",
+        path: "/AdminInfo",
+        gradient: ["#91B43D", "#5C821A"],
+        icon: "cafe-outline",
       },
     ],
     [language]
@@ -196,11 +179,11 @@ const Home = () => {
     const fetchUser = async () => {
       try {
         const token = await SecureStore.getItemAsync("token");
-        if (!token) return router.replace(ROUTES.AUTH);
+        if (!token) return router.replace(ROUTES.LOGIN);
         const res = await userApi.getUserData();
         setUserData(res.data);
       } catch (err) {
-        router.replace(ROUTES.AUTH);
+        router.replace(ROUTES.LOGIN);
       } finally {
         setLoading(false);
       }
@@ -213,11 +196,11 @@ const Home = () => {
     [userData]
   );
 
-  // RESTORED ORIGINAL UNLOCK LOGIC
   const isUnlocked = (index: number) => {
     if (userData?.role === ROLES.ADMIN) return true;
     if (index === 0) return !hasPassedData;
-    if (index === 1 || index === 7) return true;
+    // Course and Video usually unlocked
+    if (index === 1 || index === 3) return true; 
     return hasPassedData;
   };
 
@@ -235,31 +218,20 @@ const Home = () => {
     >
       <View style={styles.header}>
         <View>
-          <Text
-            style={[typography.body1, { color: colors.text, opacity: 0.6 }]}
-          >
+          <Text style={[typography.body1, { color: colors.text, opacity: 0.6 }]}>
             {translations[language].morning || "Good Morning"},
           </Text>
           <View style={styles.nameRow}>
-            <Text
-              style={[typography.h4, { fontWeight: "800", color: colors.text }]}
-            >
+            <Text style={[typography.h4, { fontWeight: "800", color: colors.text }]}>
               {language === "jp"
                 ? `${userData?.name?.split(" ")[0]} さん`
                 : userData?.name}
             </Text>
-            {userData?.role === ROLES.ADMIN && (
-              <View
-                style={[styles.adminBadge, { backgroundColor: colors.primary }]}
-              >
-                <Text style={styles.adminText}>ADMIN</Text>
-              </View>
-            )}
           </View>
         </View>
         <Pressable
           onPress={() => router.push(ROUTES.SETTINGS)}
-          style={styles.settingsBtn}
+          style={[styles.settingsBtn, { backgroundColor: colors.surface }]}
         >
           <Ionicons name="settings-sharp" size={22} color={colors.text} />
         </Pressable>
@@ -268,13 +240,8 @@ const Home = () => {
       <FlatList
         data={cards}
         keyExtractor={(item) => item.char}
-        numColumns={2}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-        columnWrapperStyle={{
-          justifyContent: "space-between",
-          marginBottom: GAP,
-        }}
+        contentContainerStyle={{ padding: PADDING, paddingBottom: 40 }}
         renderItem={({ item, index }) => (
           <HomeCard
             item={item}
@@ -283,35 +250,6 @@ const Home = () => {
             onPress={(path: string) => router.push(path)}
           />
         )}
-        ListFooterComponent={
-          <View style={{ gap: GAP, marginTop: 8 }}>
-            <HomeCard
-              item={{
-                title: translations[language].video_feed || "Video Feed",
-                char: "映",
-                path: "/VideoFeed",
-                gradient: ["#FF512F", "#DD2476"],
-                fullWidth: true,
-                icon: "play-circle",
-              }}
-              isUnlocked={true} // Video Always Unlocked
-              onPress={(path: string) => router.push(path)}
-            />
-            <HomeCard
-              item={{
-                title: "Buy me a Matcha tea",
-                char: "茶",
-                path: "/AdminInfo",
-                gradient: ["#91B43D", "#5C821A"],
-                fullWidth: true,
-                isCompact: true,
-                icon: "cafe",
-              }}
-              isUnlocked={true} // Matcha Always Unlocked
-              onPress={(path: string) => router.push(path)}
-            />
-          </View>
-        }
       />
     </SafeAreaView>
   );
@@ -328,13 +266,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   nameRow: { flexDirection: "row", alignItems: "center", marginTop: 2 },
-  adminBadge: {
-    marginLeft: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  adminText: { color: "white", fontSize: 10, fontWeight: "900" },
   settingsBtn: {
     width: 44,
     height: 44,
@@ -343,18 +274,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardContainer: {
-    borderRadius: 22,
+    borderRadius: 30,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   cardGradient: {
     flex: 1,
-    borderRadius: 22,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    borderRadius: 30,
+    paddingHorizontal: 24,
     justifyContent: "center",
     overflow: "hidden",
   },
@@ -363,27 +293,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  iconTitleGroup: { flexDirection: "row", alignItems: "center", gap: 12 },
+  iconTitleGroup: { flexDirection: "row", alignItems: "center", gap: 15 },
   bgChar: {
     position: "absolute",
-    top: -10,
-    right: -10,
-    fontSize: 95,
+    top: -15,
+    right: 5,
+    fontSize: 110,
     fontWeight: "900",
-    color: "rgba(255, 255, 255, 0.22)",
+    color: "rgba(255, 255, 255, 0.15)",
   },
   cardTitle: {
     color: "white",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "800",
     letterSpacing: -0.5,
   },
   lockOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.25)",
+    backgroundColor: "rgba(0,0,0,0.2)",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 22,
+    borderRadius: 24,
   },
   completedText: {
     color: "white",

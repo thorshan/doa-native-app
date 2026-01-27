@@ -3,14 +3,14 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -57,6 +57,8 @@ const Moji = () => {
     };
     fetchData();
   }, []);
+
+  const totalKanjis = kanjis ? kanjis.length : 0;
 
   // Filter Logic
   const filteredKanjis = useMemo(() => {
@@ -105,6 +107,36 @@ const Moji = () => {
             {translations[language].kanji_hub}
           </Text>
           <View style={{ width: 40 }} />
+        </View>
+
+        <View
+          style={[
+            styles.kanjiCountContainer,
+            { borderColor: colors.primary + "30" }, // Soft border
+          ]}
+        >
+          <View
+            style={[styles.countLabel, { backgroundColor: colors.primary }]}
+          >
+            <Text style={[styles.countLabelText, { color: colors.inverted }]}>
+              {translations[language].total || "Kanjis"}
+            </Text>
+          </View>
+          <View style={styles.countValue}>
+            <Text style={[styles.countValueText, { color: colors.text }]}>
+              {filteredKanjis.length}
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: colors.text + "60",
+                  fontWeight: "400",
+                }}
+              >
+                {" "}
+                / {totalKanjis}
+              </Text>
+            </Text>
+          </View>
         </View>
 
         {/* Search Bar */}
@@ -273,6 +305,36 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 30,
     borderWidth: 1,
+  },
+  kanjiCountContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 20,
+    marginBottom: 20,
+    height: 50,
+    borderRadius: 30,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  countLabel: {
+    flex: 1,
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  countLabelText: {
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  countValue: {
+    flex: 1, 
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  countValueText: {
+    fontSize: 18,
+    fontWeight: "900",
   },
   searchInput: { flex: 1, marginLeft: 10, fontSize: 15, fontWeight: "600" },
   filterBar: { paddingHorizontal: 20, paddingVertical: 15, gap: 10 },

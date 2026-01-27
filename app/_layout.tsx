@@ -1,10 +1,11 @@
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider, useTheme } from "@/theme/ThemeProvider";
+import * as NavigationBar from 'expo-navigation-bar';
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { StatusBar } from "react-native";
+import { Platform, StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -34,6 +35,10 @@ const AppWrapperContent = () => {
 };
 
 const RootLayout = () => {
+  if (Platform.OS === 'android') {
+    NavigationBar.setPositionAsync('absolute');
+    NavigationBar.setBackgroundColorAsync('#ffffff00');
+  }
   return (
     <ThemeProvider>
       <LanguageProvider>

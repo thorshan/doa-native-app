@@ -108,7 +108,6 @@ const Settings = () => {
           {translations[language].account_settings}
         </Text>
         <View style={{ width: 40 }} />
-        {/* Placeholder to balance the flex center */}
       </View>
 
       <ScrollView

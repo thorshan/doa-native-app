@@ -6,7 +6,18 @@ export const ROUTES = {
   COUNTINGS: "/Countings" as const,
   VIDEO_FEED: "/VideoFeed" as const,
   ADMIN_INFO: "/AdminInfo" as const,
-  AUTH: "/auth/Auth" as const,
+
+  COURSE_LIST: "/course/Course" as const,
+  CHAPTER_DETAILS: (id: string) => `/course/${id}` as const,
+  CHAPTER_GRAMMAR: (id: string) => `/course/${id}/Grammar` as const,
+  CHAPTER_SPEAKING: (id: string) => `/course/${id}/Speaking` as const,
+  CHAPTER_RENSHUUA: (id: string) => `/course/${id}/RenshuuA` as const,
+  CHAPTER_RENSHUUB: (id: string) => `/course/${id}/RenshuuB` as const,
+  CHAPTER_RENSHUUC: (id: string) => `/course/${id}/RenshuuC` as const,
+  CHAPTER_TEST: (id: string) => `/course/${id}/ChapterTest` as const,
+
+  LOGIN: "/auth/Login" as const,
+  REGISTER: "/auth/Register" as const,
 
   PROFILE: "/user/Profile" as const,
   PROFILE_EDIT: "/user/EditProfile" as const,
@@ -15,6 +26,8 @@ export const ROUTES = {
   BASIC_INFO: "/basic/BasicInfo" as const,
   BASIC_DETAILS: "/basic/BasicDetails" as const,
   BASIC_EXAM: "/basic/BasicExam" as const,
+
+  DOA_HUB: "/DoaHub" as const,
 
   GRAMMAR: "/grammar/Grammar" as const,
   GRAMMAR_N5: "/grammar/GrammarN5" as const,
@@ -36,5 +49,6 @@ export const ROUTES = {
 
   EXAMS: "/exams/Exam" as const,
   EXAM_LEVEL_TEXT: "/exams/LevelTest" as const,
-
+  EXAM_MOCK: "/exams/MockExams" as const,
+  EXAM_SCREEN: (id: string) => `/exams/${id}` as const,
 };

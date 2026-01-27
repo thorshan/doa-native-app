@@ -30,19 +30,13 @@ apiClient.interceptors.request.use(
 /* ================= RESPONSE ================= */
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    // Check if the error is 401 and not coming from the login route itself
+  (error) => {
     if (error.response?.status === 401) {
-      console.warn("Session expired. Logging out...");
-      
-      // Clear token from SecureStore
-      await SecureStore.deleteItemAsync("token"); 
-      
-      // Redirect to login using router.replace
-      // Note: In some versions of Expo Router, you might need 
-      // to ensure this doesn't run while a navigation is already in progress
-      if (router.canGoBack()) router.dismissAll();
-      router.replace(ROUTES.LOGIN);
+      const logout = async () => {
+        await SecureStore.deleteItemAsync("token");
+        router.replace(ROUTES.LOGIN);
+      };
+      logout();
     }
     return Promise.reject(error);
   }

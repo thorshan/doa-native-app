@@ -20,38 +20,49 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { lessonApi } from "@/api/lessonApi";
+import { chapterApi } from "@/api/chapterApi";
 import { progressApi } from "@/api/progressApi";
 import { translations } from "@/constants/translations";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/theme/ThemeProvider";
-import LectureList from "./LectureList";
+import ChapterList from "./ChapterList";
 
 const { width } = Dimensions.get("window");
 
 const GrammarN5 = () => {
+  const { user } = useAuth();
   const { colors, spacing, typography } = useTheme();
   const { language } = useLanguage();
 
   // States
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [lectures, setLectures] = useState<any[]>([]);
+  const [chapters, setChapters] = useState<any[]>([]);
   const [progress, setProgress] = useState<any>(null);
 
   const isMounted = useRef(true);
 
   const fetchData = async () => {
     try {
-      const [lectureRes, progressRes] = await Promise.all([
-        lessonApi.getAllLesson(),
+      if (!user?.level?.current) {
+        console.log("No current level selected for user");
+        setLoading(false);
+        return;
+      }
+      const [chapterRes, progressRes] = await Promise.all([
+        chapterApi.getChapters(user?.level?.current, ),
         progressApi.getLatestProgress(),
       ]);
 
+      console.log(chapterRes.data)
+
       if (!isMounted.current) return;
 
-      setLectures(Array.isArray(lectureRes.data) ? lectureRes.data : []);
-      setProgress(progressRes.data || null);
+      setChapters(
+        Array.isArray(chapterRes.data.data) ? chapterRes.data.data : []
+      );
+      setProgress(progressRes.data.data || null);
     } catch (err) {
       console.error("Fetch Data Error:", err);
     } finally {
@@ -77,13 +88,13 @@ const GrammarN5 = () => {
 
   /* ---------------- PROGRESS CALCULATIONS ---------------- */
   const progressStats = useMemo(() => {
-    if (!lectures.length || !progress?.lecture?._id) {
+    if (!chapters.length || !progress?.chapter?._id) {
       return { percentage: 0, statusText: "Start Course" };
     }
 
-    const total = lectures.length;
-    const currentIndex = lectures.findIndex(
-      (l) => l._id === progress.lecture._id
+    const total = chapters.length;
+    const currentIndex = chapters.findIndex(
+      (c) => c._id === progress.chapter._id
     );
 
     if (currentIndex === -1)
@@ -96,38 +107,38 @@ const GrammarN5 = () => {
 
     return {
       percentage: Math.min(percentage, 100),
-      statusText: progress.testPassed ? "Chapter Completed" : "Current Lesson",
+      statusText: progress.testPassed ? "Chapter Completed" : "Current Chapter",
     };
-  }, [lectures, progress]);
+  }, [chapters, progress]);
 
-  /* ---------------- FIXED ROUTING LOGIC ---------------- */
+  /* ---------------- ROUTING LOGIC ---------------- */
   const handleContinue = () => {
-    if (!progress?.lecture?._id || !lectures.length) return;
+    if (!progress?.chapter?._id || !chapters.length) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    const currentIndex = lectures.findIndex(
-      (l) => l._id === progress.lecture._id
+    const currentIndex = chapters.findIndex(
+      (c) => c._id === progress.chapter._id
     );
     if (currentIndex === -1) return;
 
-    // Determine if we go to next or stay on current based on testPassed
-    let targetLecture = lectures[currentIndex];
-    if (progress.testPassed && currentIndex < lectures.length - 1) {
-      targetLecture = lectures[currentIndex + 1];
-    } else if (progress.testPassed && currentIndex === lectures.length - 1) {
+    // Logic: If test passed, go to next chapter. If not, stay on current.
+    let targetChapter = chapters[currentIndex];
+    if (progress.testPassed && currentIndex < chapters.length - 1) {
+      targetChapter = chapters[currentIndex + 1];
+    } else if (progress.testPassed && currentIndex === chapters.length - 1) {
       // Course fully completed
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       return;
     }
 
-    const firstPattern = targetLecture.grammarPatterns?.[0];
+    const firstPattern = targetChapter.grammarPatterns?.[0];
     if (firstPattern?._id) {
       router.push({
         pathname: "/grammar/ChapterDetails",
         params: {
           patternId: firstPattern._id,
-          lectureId: targetLecture._id,
+          chapterId: targetChapter._id,
         },
       });
     } else {
@@ -137,8 +148,8 @@ const GrammarN5 = () => {
 
   const progressMap = useMemo(() => {
     const map = new Map();
-    if (progress?.lecture?._id) {
-      map.set(progress.lecture._id, progress);
+    if (progress?.chapter?._id) {
+      map.set(progress.chapter._id, progress);
     }
     return map;
   }, [progress]);
@@ -177,7 +188,7 @@ const GrammarN5 = () => {
         </View>
 
         {/* Dynamic Progress Card */}
-        {progress?.lecture && (
+        {progress?.chapter && (
           <Pressable
             onPress={handleContinue}
             style={({ pressed }) => [
@@ -199,7 +210,7 @@ const GrammarN5 = () => {
                   style={[styles.lessonTitle, { color: colors.text }]}
                   numberOfLines={1}
                 >
-                  {progress.lecture.title}
+                  {progress.chapter.title}
                 </Text>
               </View>
               <View
@@ -251,7 +262,7 @@ const GrammarN5 = () => {
           </Text>
         </View>
 
-        <LectureList lectures={lectures} progressMap={progressMap} />
+        <ChapterList chapters={chapters} progressMap={progressMap} />
       </ScrollView>
     </SafeAreaView>
   );

@@ -6,13 +6,18 @@ import { apiClient } from "./apiClient";
 export interface Exam {
   _id: string | { $oid: string };
   title: string;
-  type: "Practice" | "Lesson" | "Level" | "Final";
+  examType:
+    | "Level Test"
+    | "Chapter Test"
+    | "Module Final"
+    | "Mock JLPT"
+    | "Mini Quiz";
   level?: string | { $oid: string };
   module?: string | { $oid: string };
   lesson?: string | { $oid: string };
   grammar?: string | { $oid: string };
 
-  duration?: number;
+  durationMinutes?: number;
   passingScore?: number;
   totalMarks?: number;
 
@@ -36,15 +41,21 @@ export interface ExamPayload {
   isPublished?: boolean;
 }
 
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  count?: number;
+  message?: string;
+}
+
 /* ================= API ================= */
 
 export const examApi = {
   // Fetches all exams (useful for our frontend filtering)
-  getAllExams: (): Promise<{ data: Exam[] }> => apiClient.get("/exams"),
+  getAllExams: () => apiClient.get<ApiResponse<Exam[]>>("/exams"),
 
   // Fetches a single exam with full details (and populated questions)
-  getExam: (id: string): Promise<{ data: Exam }> =>
-    apiClient.get(`/exams/${id}`),
+  getExam: (id: string) => apiClient.get<ApiResponse<Exam[]>>(`/exams/${id}`),
 
   createExam: (data: ExamPayload): Promise<{ data: Exam }> =>
     apiClient.post("/exams", data),
@@ -54,7 +65,7 @@ export const examApi = {
 
   updateExam: (
     id: string,
-    data: Partial<ExamPayload>
+    data: Partial<ExamPayload>,
   ): Promise<{ data: Exam }> => apiClient.put(`/exams/${id}`, data),
 
   deleteExam: (id: string): Promise<void> => apiClient.delete(`/exams/${id}`),

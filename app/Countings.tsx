@@ -129,7 +129,7 @@ const Countings = () => {
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.text }]}>
-          {translations[language].counting_hub || "Counting Hub"}
+          {translations[language].countings}
         </Text>
         <View style={{ width: 40 }} />
       </View>

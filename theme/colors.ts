@@ -8,6 +8,8 @@ export const colors = {
     border: "#f9fafb",
     error: "#dc2626",
     inverted: "#f9fafb",
+    warning: "#eba800",
+    info: "#0095da",
   },
 
   dark: {
@@ -19,5 +21,7 @@ export const colors = {
     border: "#081d2a",
     error: "#f87171",
     inverted: "#f9fafb",
+    warning: "#ffc636",
+    info: "#1fb8ff",
   },
 };

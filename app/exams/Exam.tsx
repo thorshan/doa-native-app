@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -15,11 +16,11 @@ const Exam = () => {
     {
       id: "final",
       title: "Final Exam",
-      desc: "Comprehensive test of all modules",
+      desc: "Unlocked via Course Exams",
       icon: "trophy",
       color: "#FF9500",
-      enabled: true,
-      route: "/test/final",
+      enabled: false,
+      route: null,
     },
     {
       id: "level",
@@ -37,7 +38,7 @@ const Exam = () => {
       icon: "school",
       color: "#5856D6",
       enabled: true,
-      route: "/test/jlpt",
+      route: ROUTES.EXAM_MOCK,
     },
     {
       id: "old",
@@ -67,7 +68,7 @@ const Exam = () => {
           </Pressable>
 
           <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Exam Center
+            Exam Hub
           </Text>
 
           {/* Empty View to keep Title Centered */}
@@ -156,8 +157,7 @@ const Exam = () => {
             color={colors.primary}
           />
           <Text style={[styles.infoText, { color: colors.text + "80" }]}>
-            Level Tests are strictly regulated. Please visit your Profile to
-            initiate a Level Up.
+            Final Exams Level Tests are strictly regulated.
           </Text>
         </View>
       </ScrollView>

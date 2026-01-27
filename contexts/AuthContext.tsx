@@ -1,25 +1,36 @@
 import { authApi } from "@/api/authApi";
 import { ROUTES } from "@/constants/routes";
-import * as Google from "expo-auth-session/providers/google";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import * as WebBrowser from "expo-web-browser";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-WebBrowser.maybeCompleteAuthSession();
+interface LevelData {
+  _id: string;
+  code: string;
+}
 
 interface User {
-  id: string;
-  email: string;
+  _id: string;
   name: string;
-  picture: string;
+  email: string;
+  avatarId: number;
+  role: string;
+  level: {
+    current: LevelData;
+    passed: [];
+  };
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  signIn: () => void;
-  logout: () => void;
+  login: (data: { email: string; password: string }) => Promise<void>;
+  register: (data: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,82 +40,99 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // 1. Google Auth Request Config
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
-    webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
-  });
-
-  // 2. Check for existing session on app launch
+  // Load user from SecureStore on app start
   useEffect(() => {
-    const loadSession = async () => {
+    const loadUser = async () => {
       try {
-        const savedUser = await SecureStore.getItemAsync("user_data");
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-        }
-      } catch (e) {
-        console.error("Failed to load session", e);
+        const userData = await SecureStore.getItemAsync("user_data");
+        if (userData) setUser(JSON.parse(userData));
+      } catch (err) {
+        console.error("Failed to load user from SecureStore", err);
       } finally {
         setIsLoading(false);
       }
     };
-    loadSession();
+    loadUser();
   }, []);
 
-  // 3. Listen for Google Response
-  useEffect(() => {
-    if (response?.type === "success") {
-      // Use the id_token from Google to authenticate with your backend
-      const { id_token } = response.params;
-      handleBackendAuth(id_token);
-    }
-  }, [response]);
-
-  const handleBackendAuth = async (googleIdToken: string) => {
+  // LOGIN
+  const login = async ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      // Call your streamlined one-endpoint API
-      const res = await authApi.auth(googleIdToken);
-
+      const res = await authApi.login({ email, password });
       const { token, user: userData } = res.data;
 
-      // Save the Backend JWT for the Axios Interceptor
+      // Store token and user data
       await SecureStore.setItemAsync("token", token);
-
-      // Save user profile for persistence
       await SecureStore.setItemAsync("user_data", JSON.stringify(userData));
 
       setUser(userData);
-      router.replace("/");
-    } catch (error) {
-      console.error("Backend Authentication Failed:", error);
+      router.replace("/"); // redirect to home
+    } catch (err: any) {
+      console.error("Login error", err.response?.data || err.message);
+      throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // REGISTER
+  const register = async ({
+    name,
+    email,
+    password,
+  }: {
+    name: string;
+    email: string;
+    password: string;
+  }) => {
+    setIsLoading(true);
+    try {
+      const res = await authApi.register({ name, email, password });
+      const { token, user: userData } = res.data;
+
+      await SecureStore.setItemAsync("token", token);
+      await SecureStore.setItemAsync("user_data", JSON.stringify(userData));
+
+      setUser(userData);
+      router.replace("/"); // redirect to home
+    } catch (err: any) {
+      console.error("Register error", err.response?.data || err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // LOGOUT
   const logout = async () => {
-    await SecureStore.deleteItemAsync("token");
-    await SecureStore.deleteItemAsync("user_data");
-    setUser(null);
-    router.replace(ROUTES.AUTH);
+    setIsLoading(true);
+    try {
+      await SecureStore.deleteItemAsync("token");
+      await SecureStore.deleteItemAsync("user_data");
+      setUser(null);
+      router.replace(ROUTES.LOGIN);
+    } catch (err) {
+      console.error("Logout error", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        signIn: () => promptAsync(),
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
+// Custom hook to use AuthContext
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within AuthProvider");

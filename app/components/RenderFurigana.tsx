@@ -140,7 +140,7 @@ const RenderFurigana: React.FC<RenderFuriganaProps> = ({
 
     /* ===== NORMAL TEXT ===== */
     elements.push(
-      <Text key={elements.length} style={{ color: textColor }}>
+      <Text key={elements.length} style={{ color: textColor, fontSize: 18 }}>
         {remaining[0]}
       </Text>
     );
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     lineHeight: 12,
   },
   kanji: {
-    fontSize: 16,
+    fontSize: 18,
     lineHeight: 20,
   },
 });

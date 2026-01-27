@@ -15,6 +15,12 @@ import {
 import { ROUTES } from "@/constants/routes";
 import { useTheme } from "@/theme/ThemeProvider";
 
+// TypeScript Interfaces for the component
+export interface ChapterListProps {
+  chapters: any[]; // Ideally use the Chapter interface from your api.ts
+  progressMap: Map<string, any>;
+}
+
 if (
   Platform.OS === "android" &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -22,23 +28,25 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const LectureList: React.FC<LectureListProps> = ({ lectures, progressMap }) => {
-  const { colors, spacing, typography } = useTheme();
+const ChapterList: React.FC<ChapterListProps> = ({ chapters, progressMap }) => {
+  const { colors } = useTheme();
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const unlockedLectureIds = useMemo(() => {
+  // Logic to determine which chapters are unlocked based on previous chapter test results
+  const unlockedChapterIds = useMemo(() => {
     const unlocked = new Set<string>();
-    lectures.forEach((lecture, index) => {
+    chapters.forEach((chapter, index) => {
       if (index === 0) {
-        unlocked.add(lecture._id);
+        unlocked.add(chapter._id);
         return;
       }
-      const prevLectureId = lectures[index - 1]?._id;
-      const prevProgress = progressMap.get(prevLectureId);
-      if (prevProgress?.testPassed) unlocked.add(lecture._id);
+      const prevChapterId = chapters[index - 1]?._id;
+      const prevProgress = progressMap.get(prevChapterId);
+      // Unlocks next chapter if previous test is passed
+      if (prevProgress?.testPassed) unlocked.add(chapter._id);
     });
     return unlocked;
-  }, [lectures, progressMap]);
+  }, [chapters, progressMap]);
 
   const toggleExpand = (id: string, isLocked: boolean) => {
     if (isLocked) {
@@ -56,7 +64,7 @@ const LectureList: React.FC<LectureListProps> = ({ lectures, progressMap }) => {
       style={({ pressed }) => [
         styles.subItem,
         {
-          backgroundColor: colors.background, // Contrast against surface
+          backgroundColor: colors.background,
           borderColor: colors.text + "08",
           opacity: locked ? 0.5 : pressed ? 0.8 : 1,
         },
@@ -95,14 +103,14 @@ const LectureList: React.FC<LectureListProps> = ({ lectures, progressMap }) => {
 
   return (
     <View style={styles.container}>
-      {lectures.map((lecture, index) => {
-        const isUnlocked = unlockedLectureIds.has(lecture._id);
-        const isExpanded = expanded === lecture._id;
-        const isLast = index === lectures.length - 1;
+      {chapters.map((chapter, index) => {
+        const isUnlocked = unlockedChapterIds.has(chapter._id);
+        const isExpanded = expanded === chapter._id;
+        const isLast = index === chapters.length - 1;
 
         return (
           <View
-            key={lecture._id}
+            key={chapter._id}
             style={[
               styles.chapterWrapper,
               {
@@ -114,7 +122,7 @@ const LectureList: React.FC<LectureListProps> = ({ lectures, progressMap }) => {
           >
             {/* Chapter Header */}
             <Pressable
-              onPress={() => toggleExpand(lecture._id, !isUnlocked)}
+              onPress={() => toggleExpand(chapter._id, !isUnlocked)}
               style={styles.chapterHeader}
             >
               <View style={styles.chapterInfo}>
@@ -127,7 +135,7 @@ const LectureList: React.FC<LectureListProps> = ({ lectures, progressMap }) => {
                   <Text style={styles.numberText}>{index + 1}</Text>
                 </View>
                 <Text style={[styles.chapterTitle, { color: colors.text }]}>
-                  {lecture.title}
+                  {chapter.title}
                 </Text>
               </View>
 
@@ -163,7 +171,7 @@ const LectureList: React.FC<LectureListProps> = ({ lectures, progressMap }) => {
                   ]}
                 />
 
-                {lecture.speaking && (
+                {chapter.speaking && (
                   <View style={styles.section}>
                     <Text
                       style={[
@@ -176,12 +184,12 @@ const LectureList: React.FC<LectureListProps> = ({ lectures, progressMap }) => {
                     {renderSubItem({
                       type: "speaking",
                       icon: "mic-outline",
-                      title: lecture.speaking.title,
+                      title: chapter.speaking.title,
                       locked: !isUnlocked,
                       onPress: () =>
                         router.push({
                           pathname: ROUTES.GRAMMAR_SPEAKING,
-                          params: { speakingId: lecture.speaking?._id },
+                          params: { speakingId: chapter.speaking?._id },
                         }),
                     })}
                   </View>
@@ -193,7 +201,7 @@ const LectureList: React.FC<LectureListProps> = ({ lectures, progressMap }) => {
                   >
                     GRAMMAR PATTERNS
                   </Text>
-                  {lecture.grammarPatterns?.map((g: any) =>
+                  {chapter.grammarPatterns?.map((g: any) =>
                     renderSubItem({
                       type: "grammar",
                       icon: "book-outline",
@@ -202,7 +210,7 @@ const LectureList: React.FC<LectureListProps> = ({ lectures, progressMap }) => {
                       onPress: () =>
                         router.push({
                           pathname: ROUTES.GRAMMAR_CHAPTER,
-                          params: { lectureId: lecture._id, patternId: g._id },
+                          params: { chapterId: chapter._id, patternId: g._id },
                         }),
                     })
                   )}
@@ -278,4 +286,4 @@ const styles = StyleSheet.create({
   subItemText: { fontSize: 15, fontWeight: "600", flex: 1 },
 });
 
-export default LectureList;
+export default ChapterList;

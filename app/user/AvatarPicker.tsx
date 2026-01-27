@@ -31,7 +31,7 @@ export default function AvatarPicker() {
     setLoading(true);
     try {
       // Ensure we use the correct ID field from your Auth context
-      await userApi.updateUser(user?.id || user?.id as string, { avatarId: selectedId });
+      await userApi.updateUser(user?._id || user?._id as string, { avatarId: selectedId });
       router.push("/Settings");
     } catch (error) {
       console.error("Failed to update avatar:", error);
